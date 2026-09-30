@@ -1,30 +1,35 @@
-# Cloud FTP / SFTP Server with Terraform
+# Google Cloud FTP — Dual Authentication (GCP IAM & Microsoft Entra ID)
 
-Modulo Terraform pronto per la produzione per il deploy di un servizio **Cloud FTP / SFTP** completamente gestito (senza server da gestire o patchare), basato su **AWS Transfer Family** e storage sicuro su **Amazon S3**.
+Configurazione Terraform completa e modulare per il deploy di un servizio **Cloud FTP** su Google Cloud, con storage centralizzato su **Google Cloud Storage (GCS)** e supporto a **doppia modalità di autenticazione**:
+
+1. **GCP IAM Native (`enable_gcp_iam_auth = true`)**:
+   - Utilizza il servizio nativo gestito **Cloud FTP** di Google Cloud (`google_storage_ftp_server` e `google_storage_ftp_user`).
+   - Mappatura 1:1 di ciascun utente SFTP su una **GCP Service Account**.
+   - Controllo accessi granulare tramite **Cloud IAM** (`roles/storage.objectUser`).
+   - Autenticazione a **chiavi pubbliche SSH** (senza password, zero credenziali statiche memorizzate).
+
+2. **Microsoft Entra ID (`enable_entra_id_auth = true`)**:
+   - Consente agli utenti di connettersi via SFTP/FTP utilizzando **Username e Password aziendali**.
+   - La verifica delle credenziali è **delegata al 100% a Microsoft Entra ID** (tramite OAuth2 ROPC / Microsoft Graph API).
+   - In caso di esito positivo, l'utente viene isolato in chroot nella propria cartella su Cloud Storage (`gs://<bucket>/utenti/<username>/`).
+   - Rotazione password, blocchi e policy di sicurezza sono gestiti centralmente su Microsoft Entra ID.
+
+Entrambe le modalità possono essere abilitate **singolarmente** o **in contemporanea** sullo stesso bucket Cloud Storage.
 
 ---
 
-## 🚀 Architettura
-
-- **AWS Transfer Family**: Endpoint gestito scalabile e ad alta disponibilità che supporta i protocolli `SFTP`, `FTPS` e `FTP`.
-- **Amazon S3 Bucket**: Storage persistente con crittografia a riposo (AES-256), blocco accesso pubblico e versioning opzionale.
-- **IAM & Directory Chroot**: Ciascun utente è isolato nella propria sottocartella S3 (`/nome-utente`) tramite mappatura logica (`LOGICAL`), impedendo la navigazione nei file degli altri utenti.
-- **CloudWatch Logs**: Tracciamento di accessi, comandi e trasferimenti file.
-
----
-
-## 📁 Struttura File
+## 📁 Struttura del Progetto
 
 ```text
 .
-├── .gitignore               # Ignora chiavi, tfstate e file sensibili
-├── versions.tf              # Configurazione provider e versioni
-├── variables.tf             # Variabili di configurazione
-├── s3.tf                    # Bucket S3 cifrato e sicuro
-├── iam.tf                   # Ruoli e policy IAM (logging e accesso scoped S3)
-├── main.tf                  # Risorse AWS Transfer Server e Utenti
-├── outputs.tf               # Endpoint del server e info di connessione
-├── terraform.tfvars.example # Esempio di valorizzazione variabili
+├── .gitignore               # Esclude tfstate, credenziali e file sensibili
+├── versions.tf              # Provider Google e Google-Beta (>= 6.3.0)
+├── variables.tf             # Variabili e flag per abilitare IAM ed Entra ID
+├── storage.tf               # Bucket Cloud Storage condiviso, versioning e lifecycle
+├── cloud_ftp_iam.tf         # Server Cloud FTP nativo, Service Accounts e utenti SSH
+├── cloud_ftp_entra_id.tf    # Gateway con validazione password su Microsoft Entra ID
+├── outputs.tf               # Endpoint e istruzioni di connessione
+├── terraform.tfvars.example # File di configurazione di esempio
 └── README.md
 ```
 
@@ -32,50 +37,33 @@ Modulo Terraform pronto per la produzione per il deploy di un servizio **Cloud F
 
 ## ⚙️ Quick Start
 
-### 1. Prerequisiti
-- [Terraform >= 1.5.0](https://www.terraform.io/downloads.html)
-- AWS CLI configurata con credenziali appropriate (`aws configure`)
-
-### 2. Configura le variabili
-Copia il file di esempio e personalizzalo:
+### 1. Configura le variabili
 ```bash
 cp terraform.tfvars.example terraform.tfvars
 ```
-Genera una coppia di chiavi SSH per ciascun utente (se non ne possiedi già):
-```bash
-ssh-keygen -t ed25519 -f ./id_ftp_partner -C "partner_alpha"
-```
-Inserisci la chiave pubblica `.pub` dentro `terraform.tfvars`.
+Modifica `terraform.tfvars` indicando il tuo `project_id`, le chiavi SSH degli utenti IAM e/o i parametri di Microsoft Entra ID (`entra_tenant_id`, `entra_client_id`, `entra_client_secret`).
 
-### 3. Deploy
+### 2. Deploy con Terraform
 ```bash
 terraform init
 terraform plan
 terraform apply
 ```
 
-### 4. Connessione
-Al termine del deploy, Terraform restituirà l'endpoint del server. Potrai collegarti con:
-```bash
-sftp -i ./id_ftp_partner partner_alpha@<server_endpoint>
-```
-
 ---
 
-## 🐙 Pubblicazione su GitHub
+## 🐙 Rilascio su GitHub
 
-Quando avrai deciso il nome del repository GitHub:
+Per rilasciare questo codice sul tuo account GitHub **`Alessiozanfo`**:
 
 ```bash
-# Inizializza git
-git init
-git add .
-git commit -m "feat: initial commit cloud ftp terraform config"
+cd /Users/zanforlin/.gemini/antigravity/scratch/terraform-cloud-ftp
 
-# Rinomina il branch in main
-git branch -M main
+# Collega il remote del repository GitHub prescelto (es. terraform-cloud-ftp)
+git remote add origin git@github.com:Alessiozanfo/<nome-repo>.git
+# oppure tramite HTTPS:
+# git remote add origin https://github.com/Alessiozanfo/<nome-repo>.git
 
-# Collega il remote GitHub e fai il push
-git remote add origin git@github.com:<tuo-utente-o-org>/<tuo-repo>.git
+# Effettua il push del codice
 git push -u origin main
 ```

@@ -1,19 +1,35 @@
-aws_region  = "eu-west-1"
-environment = "prod"
-server_name = "my-company-cloud-ftp"
-bucket_name = "my-company-ftp-storage-prod-2026"
+project_id  = "mio-progetto-gcp-12345"
+region      = "europe-west1"
+zone        = "europe-west1-b"
+bucket_name = "mio-progetto-cloud-ftp-storage-2026"
 
-# Protocolli supportati: SFTP (raccomandato), FTPS, FTP
-protocols     = ["SFTP"]
-endpoint_type = "PUBLIC"
+# ==============================================================================
+# 1. Configurazione Google Cloud FTP Nativo (IAM + SSH Keys)
+# ==============================================================================
+enable_gcp_iam_auth = true
+cloud_ftp_server_id = "prod-managed-sftp"
 
-# Esempio di configurazione utenti:
-# Genera una chiave con: ssh-keygen -t ed25519 -f ./id_ftp_user1 -C "ftp_user1"
-ftp_users = {
+iam_ftp_users = {
   "partner_alpha" = {
-    ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILFakePublicKeyExample1234567890 partner_alpha"
+    display_name    = "Partner Alpha Service Account"
+    ssh_public_keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILFakePublicKeyExample1234567890 partner_alpha"
+    ]
   },
   "partner_beta" = {
-    ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILFakePublicKeyExample0987654321 partner_beta"
+    display_name    = "Partner Beta Service Account"
+    ssh_public_keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILFakePublicKeyExample0987654321 partner_beta"
+    ]
   }
 }
+
+# ==============================================================================
+# 2. Configurazione Microsoft Entra ID (Username & Password delegata a Microsoft)
+# ==============================================================================
+enable_entra_id_auth = true
+
+# Reperibili su portale Microsoft Entra ID (Azure AD) -> App Registrations
+entra_tenant_id     = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+entra_client_id     = "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
+entra_client_secret = "SegretoApplicativoEntraID_zzzzzzzzzz"

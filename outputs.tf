@@ -1,29 +1,26 @@
-output "server_id" {
-  description = "ID del server AWS Transfer"
-  value       = aws_transfer_server.ftp_server.id
+output "storage_bucket_name" {
+  description = "Nome del bucket Cloud Storage utilizzato per archiviare i file"
+  value       = google_storage_bucket.ftp_storage.name
 }
 
-output "server_endpoint" {
-  description = "Endpoint DNS del server Cloud FTP / SFTP"
-  value       = aws_transfer_server.ftp_server.endpoint
+# Output per lo scenario 1: Cloud FTP Nativo IAM
+output "native_cloud_ftp_server_id" {
+  description = "Server ID del server Cloud FTP nativo di Google Cloud"
+  value       = var.enable_gcp_iam_auth ? google_storage_ftp_server.managed_sftp[0].server_id : "Disabilitato"
 }
 
-output "s3_bucket_name" {
-  description = "Nome del bucket S3 utilizzato per lo storage dei file"
-  value       = aws_s3_bucket.ftp_storage.id
+output "native_cloud_ftp_users" {
+  description = "Utenti configurati con identità IAM GCP e chiavi SSH"
+  value       = var.enable_gcp_iam_auth ? keys(var.iam_ftp_users) : []
 }
 
-output "s3_bucket_arn" {
-  description = "ARN del bucket S3"
-  value       = aws_s3_bucket.ftp_storage.arn
+# Output per lo scenario 2: Entra ID Gateway
+output "entraid_ftp_endpoint_ip" {
+  description = "Indirizzo IP statico per la connessione SFTP/FTP con credenziali Microsoft Entra ID"
+  value       = var.enable_entra_id_auth ? google_compute_address.entra_ftp_ip[0].address : "Disabilitato"
 }
 
-output "configured_users" {
-  description = "Lista degli utenti configurati"
-  value       = keys(var.ftp_users)
-}
-
-output "sftp_connection_example" {
-  description = "Esempio di comando per connettersi via SFTP (per il primo utente configurato se presente)"
-  value = length(keys(var.ftp_users)) > 0 ? "sftp -i <chiave_privata> ${element(keys(var.ftp_users), 0)}@${aws_transfer_server.ftp_server.endpoint}" : "Nessun utente definito in ftp_users"
+output "entraid_sftp_connection_example" {
+  description = "Esempio di comando per connettersi via SFTP con credenziali Entra ID"
+  value = var.enable_entra_id_auth ? "sftp utente.aziendale@dominio.it@${google_compute_address.entra_ftp_ip[0].address}" : "Disabilitato"
 }
