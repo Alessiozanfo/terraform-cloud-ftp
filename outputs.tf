@@ -1,24 +1,24 @@
 output "storage_bucket_name" {
-  description = "Nome del bucket Cloud Storage utilizzato per archiviare i file"
+  description = "Name of the Google Cloud Storage bucket used for SFTP files"
   value       = google_storage_bucket.ftp_storage.name
 }
 
 output "cloud_ftp_server_id" {
-  description = "Server ID del server Cloud FTP nativo di Google Cloud"
+  description = "Server ID of the native Google Cloud FTP server"
   value       = google_storage_ftp_server.managed_sftp.server_id
 }
 
 output "cloud_ftp_service_agent" {
-  description = "Email del Service Agent generato automaticamente per questo server Cloud FTP"
+  description = "Email of the unique Service Agent generated automatically for this Cloud FTP server"
   value       = google_storage_ftp_server.managed_sftp.service_agent
 }
 
 output "configured_ftp_users" {
-  description = "Elenco degli utenti SFTP censiti su Cloud FTP"
+  description = "List of configured SFTP users on Cloud FTP"
   value       = keys(var.ftp_users)
 }
 
 output "sftp_connection_syntax" {
-  description = "Sintassi per collegarsi via client SFTP con chiave SSH"
-  value       = "sftp -i <percorso_chiave_privata_ssh> <user_id>@<HOST_O_IP_SERVER>"
+  description = "Command syntax to connect via an SFTP client using SSH key authentication"
+  value       = "sftp -i <path_to_private_ssh_key> <user_id>@<SERVER_HOST_OR_IP>"
 }

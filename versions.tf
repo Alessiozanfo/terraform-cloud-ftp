@@ -12,9 +12,9 @@ terraform {
     }
   }
 
-  # Configurazione opzionale per il backend remoto su GCS
+  # Optional configuration for remote GCS backend
   # backend "gcs" {
-  #   bucket = "mio-terraform-state-bucket"
+  #   bucket = "my-terraform-state-bucket"
   #   prefix = "cloud-ftp/state"
   # }
 }

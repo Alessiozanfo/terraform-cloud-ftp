@@ -3,7 +3,7 @@ region              = "europe-west1"
 cloud_ftp_server_id = "partner-sftp-srv"
 bucket_name         = "cloud-ftp-zrtmt-storage"
 
-# Limitazione opzionale degli IP sorgente (default 0.0.0.0/0 per accesso pubblico)
+# Optional CIDR IP restrictions (defaults to 0.0.0.0/0 for public access)
 allowed_cidr_blocks = ["0.0.0.0/0"]
 
 labels = {
@@ -11,8 +11,8 @@ labels = {
   managed_by  = "terraform"
 }
 
-# Configurazione utenti SFTP nativi con chiavi SSH pubbliche
-# (Identità collegate al ciclo di vita di Microsoft Entra ID tramite Cloud Identity)
+# Configuration for native SFTP users with authorized SSH public keys
+# (Identities governed by Microsoft Entra ID lifecycle via Google Cloud Identity)
 ftp_users = {
   "partner_alpha" = {
     display_name  = "Partner Alpha Service Account"
