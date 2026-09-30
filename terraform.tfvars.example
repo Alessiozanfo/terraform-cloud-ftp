@@ -1,0 +1,19 @@
+aws_region  = "eu-west-1"
+environment = "prod"
+server_name = "my-company-cloud-ftp"
+bucket_name = "my-company-ftp-storage-prod-2026"
+
+# Protocolli supportati: SFTP (raccomandato), FTPS, FTP
+protocols     = ["SFTP"]
+endpoint_type = "PUBLIC"
+
+# Esempio di configurazione utenti:
+# Genera una chiave con: ssh-keygen -t ed25519 -f ./id_ftp_user1 -C "ftp_user1"
+ftp_users = {
+  "partner_alpha" = {
+    ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILFakePublicKeyExample1234567890 partner_alpha"
+  },
+  "partner_beta" = {
+    ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILFakePublicKeyExample0987654321 partner_beta"
+  }
+}
