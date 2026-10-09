@@ -1,33 +1,38 @@
-project_id          = "cloud-ftp-zrtmt"
+project_id          = "my-gcp-project-id"
 region              = "europe-west1"
 cloud_ftp_server_id = "partner-sftp-srv"
-bucket_name         = "cloud-ftp-zrtmt-storage"
+bucket_name         = "my-gcp-project-id-cloud-ftp-storage"
 
-# Optional CIDR IP restrictions (defaults to 0.0.0.0/0 for public access)
-allowed_cidr_blocks = ["0.0.0.0/0"]
+# REQUIRED: IPv4 CIDR blocks allowed to reach the SFTP endpoint (partners' egress IPs).
+# This is the only network-level control of an EXTERNAL server; 0.0.0.0/0 is rejected.
+allowed_cidr_blocks = [
+  "203.0.113.0/24", # Partner Alpha egress range (example, RFC 5737)
+  "198.51.100.7/32" # Partner Beta egress IP (example, RFC 5737)
+]
 
 labels = {
   environment = "production"
-  managed_by  = "terraform"
 }
 
-# Configuration for native SFTP users with authorized SSH public keys
-# (Identities governed by Microsoft Entra ID lifecycle via Google Cloud Identity)
+# SFTP users. The map key is the SFTP login name AND the suffix of the dedicated
+# service account (ftp-usr-<key>): lowercase letters, digits, hyphens, max 22 chars.
+# Replace the example public keys with the partners' real OpenSSH public keys
+# (ssh-ed25519 or ssh-rsa). Never commit private keys.
 ftp_users = {
-  "partner_alpha" = {
+  "partner-alpha" = {
     display_name  = "Partner Alpha Service Account"
-    bucket_prefix = "incoming/partner_alpha"
+    bucket_prefix = "incoming/partner-alpha"
     directory     = "/incoming"
     ssh_public_keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILFakePublicKeyExample1234567890 partner_alpha"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIZ1T4c+wvY4bQpKi5SKqFSVudja+VyG8zVWp+P34Miq partner-alpha-example-key"
     ]
   },
-  "partner_beta" = {
+  "partner-beta" = {
     display_name  = "Partner Beta Service Account"
-    bucket_prefix = "incoming/partner_beta"
+    bucket_prefix = "incoming/partner-beta"
     directory     = "/incoming"
     ssh_public_keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILFakePublicKeyExample0987654321 partner_beta"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDcGrOBPYeUiutTEm8V7mqo8NahWsAFZN8WIa6k4nv+y partner-beta-example-key"
     ]
   }
 }
